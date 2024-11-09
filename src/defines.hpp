@@ -1,5 +1,10 @@
 #pragma once
 
+//toggle defines
+#define BLUETOOTH
+//#define SERIAL_TELEM
+//#define WATCHDOG
+
 #define ESC1_PIN 13 // TELEM 14
 #define ESC2_PIN 15 // TELEM 16
 #define LED_PIN 34
