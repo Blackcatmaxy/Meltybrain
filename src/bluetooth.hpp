@@ -5,7 +5,13 @@
 #include "defines.hpp"
 #include <Adafruit_SleepyDog.h>
 
- int* throttle_ptr;
+struct Throttles {
+    int rotation;
+    int forward;
+    int side;
+};
+
+Throttles* throttle_ptr;
 volatile int forward_throttle;
 
 void initBluetooth();
@@ -29,7 +35,7 @@ void printTask(void *pvParams) {
 
 void bluetoothSetup(void *pvParams)
 {
-     throttle_ptr = (int*)pvParams;
+    throttle_ptr = (Throttles*)pvParams;
 
     if (!BLE.begin())
     {
@@ -62,7 +68,7 @@ void bluetoothSetup(void *pvParams)
 //                delay(100);
                 // peripheral disconnected, we are done
 //                digitalWrite(LED_PIN, HIGH);
-                 *throttle_ptr = 0;
+                throttle_ptr->rotation = 0;
 #ifdef WATCHDOG
                 Watchdog.disable();
 #endif
@@ -150,36 +156,18 @@ void HIDReportWritten(BLEDevice central, BLECharacteristic characteristic)
     }
 #endif
     // ucData[4] is left joystick vertical, ucData[6] is right vertical
+    // 8 is right trigger 3 left joy x 5 right joy x
     // int pwm1 = ucData[6], pwm2 = ucData[4];
-    // ranges from 1-255 with stick resting in the middle ~128, we don't want motors moving on their own
-    // so we make 128 the new 0 point, going from 0-128
-    // if (pwm1 > 128)
-    //     pwm1 = 0;
-    // else
-    //     pwm1 = 128 - pwm1;
-    // if (pwm2 > 128)
-    //     pwm2 = 0;
-    // else
-    //     pwm2 = 128 - pwm2;
+    // ranges from 1-255 with stick resting in the middle ~128
 
     // Allow 'A' button on the controller to toggle LED
     digitalWrite(LED_PIN, ucData[2] / 64);
-    forward_throttle = (-1 * ucData[4]) - 128;
-     *throttle_ptr = ucData[8];
-    // ESC sees 1000 as stop and 2000 as full throttle
-    // pwm1 = map(pwm1, 0, 128, MIN_PULSE, MAX_PULSE);
-    // pwm2 = map(pwm2, 0, 128, MIN_PULSE, MAX_PULSE);
-    // esc1.writeMicroseconds(pwm1);
-    // esc2.writeMicroseconds(pwm2);
+    throttle_ptr->forward = map(ucData[4], 0, 255, 128, -128);
+    throttle_ptr->side = map(ucData[5], 0, 255, 128, -128);
+    throttle_ptr->rotation = ucData[8];
 
 #ifdef SERIAL_TELEM
-    // Serial.printf(" pwm %d:%d", ucData[4], pwm2);
-    Serial.printf(" throttle %d:%d\n", ucData[8], rot_throttle);
+    Serial.printf(" forward %d:%d", ucData[4], throttle_ptr->forward);
+    Serial.printf(" rotation %d:%d\n", ucData[8], throttle_ptr->rotation);
 #endif
 }
-
-struct Throttles {
-    int rotation;
-    int forward;
-    int side;
-};

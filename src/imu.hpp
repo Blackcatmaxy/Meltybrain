@@ -32,13 +32,14 @@ void initImu()
     {
         int16_t x, y, z;
         imu.readAxes(x, y, z);
-        float xG = imu.convertToG(IMU_MAX, x);
+//        float xG = imu.convertToG(IMU_MAX, x);
         sumX += imu.convertToG(IMU_MAX, x);
         sumY += imu.convertToG(IMU_MAX, y);
         // Serial.printf("g:%f, filter%f\n", xG, FilterBoi.AddValue(xG));
     }
     zeroGX = sumX / count;
     zeroGY = sumY / count;
+    Serial.printf("zero x: %f, zero y: %f\n");
     // zeroGX = FilterBoi.GetFiltered();
     maxG = prefs.getFloat("maxG", 0);
     maxRealG = prefs.getFloat("maxRealG", 0);
@@ -52,12 +53,12 @@ float readForce()
     // Serial.printf("zero gx%f", zeroGX);
     xG = imu.convertToG(IMU_MAX, x) - zeroGX;
     yG = imu.convertToG(IMU_MAX, y) - zeroGY;
-    // Serial.printf("xg:%f zerog: %f xcos %f, yg:%f zerog: %f ysin%f\n", xG, zeroGX, xG / 0.771191440f, yG, zeroGY, yG/sin(39.539));
+//     Serial.printf("xg:%f zerog: %f xcos %f, yg:%f zerog: %f ysin%f\n", xG, zeroGX, xG / 0.771191440f, yG, zeroGY, yG/sin(39.539));
     // return xG * xComponent - yG * yComponent;
-    xG = xG / 0.771191440;// x/cos(39.539)
+    xG = xG / 0.771191440f;// x/cos(39.539)
     yG = yG / 0.6366033011f;
-    // float G = (xG + yG)/2.0f; 
-    float G = yG;
+     float G = (xG + yG)/2.0f;
+//    float G = yG;
 
     // if (G > maxG)
     // {

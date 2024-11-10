@@ -39,7 +39,7 @@ void setup()
             bluetoothSetup,
             "bluetoothTask",
             200000,
-            (void*)&rot_throttle,
+            (void*)&throttles,
             0,
             NULL,
             0 // core being run on, wireless is core 1
@@ -62,8 +62,9 @@ void loop()
 
     // if (rpm > 00) {
     // digitalWrite(LED_PIN, HIGH);
-    if (rpm < 50)
-        rpm = 50;
+    if (rpm < 60)
+        rpm = 60;
     manageRotation(rpm);
 //    Serial.println("Loop");
+//    delay(10);
 }
