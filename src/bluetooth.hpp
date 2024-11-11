@@ -163,11 +163,13 @@ void HIDReportWritten(BLEDevice central, BLECharacteristic characteristic)
     // Allow 'A' button on the controller to toggle LED
     digitalWrite(LED_PIN, ucData[2] / 64);
     throttle_ptr->forward = map(ucData[4], 0, 255, 128, -128);
-    throttle_ptr->side = map(ucData[5], 0, 255, 128, -128);
+//    throttle_ptr->side = map(ucData[5], 0, 255, -128, 128);
+    throttle_ptr->side = map(ucData[5], 0, 255, -256, 64);
     throttle_ptr->rotation = ucData[8];
 
 #ifdef SERIAL_TELEM
     Serial.printf(" forward %d:%d", ucData[4], throttle_ptr->forward);
+    Serial.printf(" side %d:%d", ucData[5], throttle_ptr->side);
     Serial.printf(" rotation %d:%d\n", ucData[8], throttle_ptr->rotation);
 #endif
 }
