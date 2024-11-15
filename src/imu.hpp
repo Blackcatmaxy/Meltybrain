@@ -23,11 +23,11 @@ void initImu()
     imu.setI2CAddr(0x19);
     imu.begin(LIS331::USE_I2C);
     imu.setFullScale(IMU_RANGE);
-    float sumX = 0, sumY = 0;
+    double sumX = 0, sumY = 0;
     int count = 1000;
     // MedianFilter<float> FilterBoi(10);
     
-    delay(250);
+//    delay(250);
     for (int i = 0; i < count; i++)
     {
         int16_t x, y, z;
@@ -35,12 +35,12 @@ void initImu()
 //        float xG = imu.convertToG(IMU_MAX, x);
         sumX += imu.convertToG(IMU_MAX, x);
         sumY += imu.convertToG(IMU_MAX, y);
+//        delay(10);
         // Serial.printf("g:%f, filter%f\n", xG, FilterBoi.AddValue(xG));
     }
     zeroGX = sumX / count;
     zeroGY = sumY / count;
-    Serial.printf("zero x: %f, zero y: %f\n");
-    // zeroGX = FilterBoi.GetFiltered();
+    Serial.printf("zero x: %f, zero y: %f\n", zeroGX, zeroGY);
     maxG = prefs.getFloat("maxG", 0);
     maxRealG = prefs.getFloat("maxRealG", 0);
 }
