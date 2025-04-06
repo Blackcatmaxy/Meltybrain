@@ -13,8 +13,8 @@ unsigned long overflow_us = 0;
 Throttles throttles;
 
 void manageRotation(double rpm) {
-    int rotationThrottleUs = map(throttles.rotation, 0, 255, MIN_PULSE, MAX_PULSE);
-    int forwardThrottleUs = map(abs(throttles.forward), 0, 130, MIN_PULSE, MAX_PULSE) - MIN_PULSE;
+    int rotationThrottleUs = map(throttles.rotation, 0, 255, MID_PULSE, MAX_PULSE);
+    int forwardThrottleUs = map(abs(throttles.forward), 0, 130, MID_PULSE, MAX_PULSE) - MID_PULSE;
 
 //    Serial.printf("%d - %d\n", rotationThrottleUs, forwardThrottleUs);
 //    delay(1);
@@ -23,15 +23,21 @@ void manageRotation(double rpm) {
     unsigned long thisRotationUs = 0;
     long rotationIntervalUs = (getRotationIntervalMs(rpm) * 1000) - overflow_us;
 
-//    unsigned long motorPhase1Start = rotationIntervalUs / 4;
-//    unsigned long motorPhase1Stop = rotationIntervalUs - motorPhase1Start;
-//    unsigned long motorPhase2Start = motorPhase1Stop;
-//    unsigned long motorPhase2Stop = motorPhase1Start;
-// TODO: This isn't right, motor 2 never starts since it's start time is at end of interval - but it works?
-    unsigned long motorPhase1Start = rotationIntervalUs / 2;
-    unsigned long motorPhase1Stop = rotationIntervalUs;
+    unsigned long motorPhase1Start = rotationIntervalUs / 4;
+    unsigned long motorPhase1Stop = rotationIntervalUs - motorPhase1Start;
     unsigned long motorPhase2Start = motorPhase1Stop;
     unsigned long motorPhase2Stop = motorPhase1Start;
+
+    unsigned long ledLength = rotationIntervalUs / 8;
+    unsigned long ledStart = (rotationIntervalUs / 2) - ledLength / 2;
+    unsigned long ledEnd = (rotationIntervalUs / 2) + ledLength / 2;
+
+// TODO: This isn't right, motor 2 never starts since it's start time is at end of interval - but it works?
+
+//    unsigned long motorPhase1Start = rotationIntervalUs / 2;
+//    unsigned long motorPhase1Stop = rotationIntervalUs;
+//    unsigned long motorPhase2Start = motorPhase1Stop;
+//    unsigned long motorPhase2Stop = motorPhase1Start;
 
     static unsigned long cycle_count = 0;
     cycle_count++;
@@ -47,7 +53,7 @@ void manageRotation(double rpm) {
 
     while (thisRotationUs < rotationIntervalUs) {
         // LED control
-        if (thisRotationUs < rotationIntervalUs / 8)
+        if (thisRotationUs > ledStart && thisRotationUs < ledEnd)
             digitalWrite(LED_PIN, HIGH);
         else
             digitalWrite(LED_PIN, LOW);

@@ -41,8 +41,8 @@ void setup()
             200000,
             (void*)&throttles,
             0,
-            NULL,
-            0 // core being run on, wireless is core 1
+            nullptr,
+            1 // core being run on, wireless is core 1
     );
 }
 
@@ -62,9 +62,18 @@ void loop()
 
     // if (rpm > 00) {
     // digitalWrite(LED_PIN, HIGH);
-    if (rpm < 60)
-        rpm = 60;
-    manageRotation(rpm);
+    if (throttles.rotation) {
+        if (rpm < 60)
+            rpm = 60;
+        manageRotation(rpm);
+    } else {
+        int rightThrottle = map(throttles.rightForward, -128, 128, MIN_PULSE, MAX_PULSE);
+        int leftThrottle = map(throttles.forward, -128, 128, MIN_PULSE, MAX_PULSE);
+        Serial.printf("left: %d right: %d\n", leftThrottle, rightThrottle);
+        writeMotorRight(rightThrottle);
+        writeMotorLeft(leftThrottle);
+        delay(50);
+    }
 //    Serial.println("Loop");
 //    delay(10);
 }
