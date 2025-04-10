@@ -67,12 +67,13 @@ void loop()
             rpm = 60;
         manageRotation(rpm);
     } else {
-        int rightThrottle = map(throttles.rightForward, -128, 128, MIN_PULSE, MAX_PULSE);
-        int leftThrottle = map(throttles.forward, -128, 128, MIN_PULSE, MAX_PULSE);
+        int rightThrottle = map(throttles.rightForward, -128, 128, -999, 999) * -1;
+        int leftThrottle = map(throttles.forward, -128, 128, -999, 999);
+#ifdef SERIAL_TELEM
         Serial.printf("left: %d right: %d\n", leftThrottle, rightThrottle);
-        writeMotorRight(rightThrottle);
-        writeMotorLeft(leftThrottle);
-        delay(50);
+#endif
+        tankDrive(leftThrottle, rightThrottle);
+        delayMicroseconds(50);
     }
 //    Serial.println("Loop");
 //    delay(10);

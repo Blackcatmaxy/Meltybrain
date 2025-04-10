@@ -1,37 +1,41 @@
 #pragma once
 #include <Arduino.h>
 #include <defines.hpp>
-#include <ESP32Servo.h>
-#include "driver/rmt.h"
+#include <DShotESC.h>
 
-Servo esc1, esc2;
+DShotESC esc1, esc2;
 
 void initMotors();
-void writeMotorLeft(int us);
-void writeMotorRight(int us);
+void tankDrive(int left, int right);
+void writeLeft(int throttle);
+void writeRight(int throttle);
 
 void initMotors()
 {
     pinMode(ESC1_PIN, OUTPUT);
     pinMode(ESC2_PIN, OUTPUT);
 
-    // TODO: can we raise this?
-    // Since we're sending max 2000µs pulses theoredically max should be 500hz but can also adjust
-    // throttle on ESC side to read smaller pulses as max throttle, allowing even higher frequency?
-    esc1.setPeriodHertz(400);
-    esc1.attach(ESC1_PIN, MID_PULSE, MAX_PULSE);
-    esc2.setPeriodHertz(400);
-    esc2.attach(ESC2_PIN, MID_PULSE, MAX_PULSE);
-    esc1.write(0);
-    esc2.write(0);
+    esc1.install((gpio_num_t)ESC1_PIN, RMT_CHANNEL_0);
+    esc2.install((gpio_num_t)ESC2_PIN, RMT_CHANNEL_1);
+    esc1.init();
+    esc2.init();
 }
 
-void writeMotorLeft(int us)
-{
-    esc1.writeMicroseconds(us);
+void tankDrive(int left, int right) {
+    writeLeft(left);
+    writeRight(right);
 }
 
-void writeMotorRight(int us)
-{
-    esc2.writeMicroseconds(us);
+void writeLeft(int throttle) {
+    if (throttle == 0) 
+        esc1.sendMotorStop();
+
+    esc1.sendThrottle3D(throttle * MOTOR_MULT);
+}
+
+void writeRight(int throttle) {
+    if (throttle == 0) 
+        esc2.sendMotorStop();
+
+    esc2.sendThrottle3D(throttle * MOTOR_MULT);
 }

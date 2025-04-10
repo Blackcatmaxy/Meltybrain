@@ -13,11 +13,8 @@ unsigned long overflow_us = 0;
 Throttles throttles;
 
 void manageRotation(double rpm) {
-    int rotationThrottleUs = map(throttles.rotation, 0, 255, MID_PULSE, MAX_PULSE);
-    int forwardThrottleUs = map(abs(throttles.forward), 0, 130, MID_PULSE, MAX_PULSE) - MID_PULSE;
-
-//    Serial.printf("%d - %d\n", rotationThrottleUs, forwardThrottleUs);
-//    delay(1);
+    int rotationThrottle = map(throttles.rotation, 0, 255, 0, 999);
+    int forwardThrottle = map(abs(throttles.forward), 0, 130, 0, 999);
 
     unsigned long start = micros();
     unsigned long thisRotationUs = 0;
@@ -60,35 +57,35 @@ void manageRotation(double rpm) {
 
         if (abs(throttles.forward) - 10 < 0) {
             // no translation
-            writeMotorLeft(rotationThrottleUs);
-            writeMotorRight(rotationThrottleUs);
+            writeLeft(rotationThrottle);
+            writeRight(rotationThrottle);
         } else {
             bool forwards = throttles.forward > 0;
             // Motor 1 control
             if (forwards) {
                 if ((motorPhase1Start <= thisRotationUs && motorPhase1Stop >= thisRotationUs))
-                    writeMotorLeft(rotationThrottleUs); //on
+                    writeLeft(rotationThrottle); //on
                 else
-                    writeMotorLeft(rotationThrottleUs - forwardThrottleUs);
+                    writeLeft(rotationThrottle - forwardThrottle);
 
                 // Motor 2 control
                 if ((motorPhase2Start <= thisRotationUs && motorPhase2Stop >= thisRotationUs))
-                    writeMotorRight(rotationThrottleUs); //on
+                    writeRight(rotationThrottle); //on
                 else
-                    writeMotorRight(rotationThrottleUs - forwardThrottleUs);
+                    writeRight(rotationThrottle - forwardThrottle);
             }
 
             if (!forwards) {
                 if ((motorPhase1Start <= thisRotationUs && motorPhase1Stop >= thisRotationUs))
-                    writeMotorRight(rotationThrottleUs); //on
+                    writeRight(rotationThrottle); //on
                 else
-                    writeMotorRight(rotationThrottleUs - forwardThrottleUs);
+                    writeRight(rotationThrottle - forwardThrottle);
 
                 // Motor 2 control
                 if ((motorPhase2Start <= thisRotationUs && motorPhase2Stop >= thisRotationUs))
-                    writeMotorLeft(rotationThrottleUs); //on
+                    writeLeft(rotationThrottle); //on
                 else
-                    writeMotorLeft(rotationThrottleUs - forwardThrottleUs);
+                    writeLeft(rotationThrottle - forwardThrottle);
             }
         }
 

@@ -140,9 +140,11 @@ void dataReceived(BLEDevice device, BLECharacteristic characteristic)
 
     // define to see all values of data received, tested for Stadia controller but might vary between different controllers?
 #ifdef SERIAL_TELEM
-    bool print = millis() - lastBle > 100;
-    lastBle = millis();
+    // bool print = millis() - lastBle > 100;
+    bool print = false;
+
     if (print) {
+        lastBle = millis();
         Serial.printf("Data received %d bytes -", i);
         for (int j = 0; j < i; j++) {
             Serial.printf(" '%d:%d' ", j, data[j]);

@@ -1,0 +1,2 @@
+## To-be-named meltybrain code
+Inspired by [nothingslabs/openmelt2](https://github.com/nothinglabs/openmelt2) but is a ground up heavily WIP implementation built for my custom ESP32-S3 board compiling using PlatformIO under the arduino libraries.
