@@ -1,6 +1,6 @@
 // written by Daniel Bereza aka Blackcatmaxy
-// based on https://github.com/bitbank2/Nano_33_Gamepad, credit is due for being the best reference on the dark magic of BLE
-// for lack of anything better, but almost no code is actually shared in spirit of copyright
+// based on https://github.com/bitbank2/Nano_33_Gamepad with permission
+// credit is due for being the best reference on the dark magic of BLE I could find
 #pragma once
 
 #include <Arduino.h>
