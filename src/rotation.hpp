@@ -12,22 +12,40 @@ unsigned long overflow_us = 0;
 //int rot_throttle = 0;
 Throttles throttles;
 
-void manageRotation(double rpm) {
-    int rotationThrottle = map(throttles.rotation, 0, 255, 0, 999);
-    int forwardThrottle = map(abs(throttles.forward), 0, 130, 0, 999);
+int rotationThrottle;
+int forwardThrottle;
 
-    unsigned long start = micros();
-    unsigned long thisRotationUs = 0;
-    long rotationIntervalUs = (getRotationIntervalMs(rpm) * 1000) - overflow_us;
+unsigned long start;
+unsigned long thisRotationUs = 0;
+long rotationIntervalUs;
 
-    unsigned long motorPhase1Start = rotationIntervalUs / 4;
-    unsigned long motorPhase1Stop = rotationIntervalUs - motorPhase1Start;
-    unsigned long motorPhase2Start = motorPhase1Stop;
-    unsigned long motorPhase2Stop = motorPhase1Start;
+unsigned long motorPhase1Start;
+unsigned long motorPhase1Stop;
+unsigned long motorPhase2Start;
+unsigned long motorPhase2Stop;
 
-    unsigned long ledLength = rotationIntervalUs / 8;
-    unsigned long ledStart = (rotationIntervalUs / 2) - ledLength / 2;
-    unsigned long ledEnd = (rotationIntervalUs / 2) + ledLength / 2;
+unsigned long ledLength = rotationIntervalUs / 8;
+unsigned long ledStart = (rotationIntervalUs / 2) - ledLength / 2;
+unsigned long ledEnd = (rotationIntervalUs / 2) + ledLength / 2;
+
+void manageRotation(double rpm, bool reset) {
+    if (reset || thisRotationUs == 0)
+    {
+        rotationThrottle = map(throttles.rotation, 0, 255, 0, 999);
+        forwardThrottle = map(abs(throttles.forward), 0, 130, 0, 999);
+
+        start = micros();
+        rotationIntervalUs = (getRotationIntervalMs(rpm) * 1000) - overflow_us;
+
+        motorPhase1Start = rotationIntervalUs / 4;
+        motorPhase1Stop = rotationIntervalUs - motorPhase1Start;
+        motorPhase2Start = motorPhase1Stop;
+        motorPhase2Stop = motorPhase1Start;
+
+        ledLength = rotationIntervalUs / 8;
+        ledStart = (rotationIntervalUs / 2) - ledLength / 2;
+        ledEnd = (rotationIntervalUs / 2) + ledLength / 2;
+    }
 
 // TODO: This isn't right, motor 2 never starts since it's start time is at end of interval - but it works?
 
@@ -48,7 +66,7 @@ void manageRotation(double rpm) {
         rotationIntervalUs += rotationIntervalUs * multiplier;
     }
 
-    while (thisRotationUs < rotationIntervalUs) {
+    // while (thisRotationUs < rotationIntervalUs) {
         // LED control
         if (thisRotationUs > ledStart && thisRotationUs < ledEnd)
             digitalWrite(LED_PIN, HIGH);
@@ -91,9 +109,16 @@ void manageRotation(double rpm) {
 
 
         thisRotationUs = micros() - start;
-    }
+    // }
 
+    if (thisRotationUs > rotationIntervalUs)
+    {
+        
     //TODO: NEVER LET THIS UNDERFLOW
     overflow_us = thisRotationUs - rotationIntervalUs;
-//    Serial.printf("rotation theory %ld, real %ld, overflow %ld\n", rotationIntervalUs, thisRotationUs, overflow_us);
+#ifdef SERIAL_TELEM
+//       Serial.printf("rotation theory %ld, real %ld, overflow %ld\n", rotationIntervalUs, thisRotationUs, overflow_us);
+#endif
+        thisRotationUs = 0;
+    }
 }

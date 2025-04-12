@@ -35,6 +35,7 @@ void dataReceived(BLEDevice device, BLECharacteristic characteristic);
 
 void bluetoothSetup(void *pvParams)
 {
+    Serial.println("Started F");
     throttle_ptr = (Throttles*)pvParams;
 
     if (!BLE.begin())
@@ -57,7 +58,7 @@ void bluetoothSetup(void *pvParams)
 
             if (availableDevice.advertisedServiceUuid() == "1812")
             {
-#ifdef SERIAL_TELEM
+#ifdef SERIAL_TELEMF
                 Serial.println("Connected");
 #endif
                 BLE.stopScan();
@@ -139,7 +140,7 @@ void dataReceived(BLEDevice device, BLECharacteristic characteristic)
     int i = characteristic.readValue(data, sizeof(data));;
 
     // define to see all values of data received, tested for Stadia controller but might vary between different controllers?
-#ifdef SERIAL_TELEM
+#ifdef SERIAL_TELEMF
     // bool print = millis() - lastBle > 100;
     bool print = false;
 
@@ -159,13 +160,13 @@ void dataReceived(BLEDevice device, BLECharacteristic characteristic)
     digitalWrite(LED_PIN, data[2] & 64);
     if (data[2] & 16) {
         throttle_ptr->rotation = 1;
-#ifdef SERIAL_TELEM
+#ifdef SERIAL_TELEMF
         if (print)
             Serial.println("Enable rotation");
 #endif
     } else if (data[2] & 32) {
         throttle_ptr->rotation = 0;
-#ifdef SERIAL_TELEM
+#ifdef SERIAL_TELEMF
         if (print)
             Serial.println("Disable rotation");
 #endif
@@ -175,7 +176,7 @@ void dataReceived(BLEDevice device, BLECharacteristic characteristic)
     throttle_ptr->rotation = data[8];
     throttle_ptr->rightForward = map(data[6], 0, 255, 128, -128);
 
-#ifdef SERIAL_TELEM
+#ifdef SERIAL_TELEMF
     if (print) {
         Serial.printf(" forward %d:%d", data[4], throttle_ptr->forward);
         Serial.printf(" side %d:%d", data[5], throttle_ptr->side);
