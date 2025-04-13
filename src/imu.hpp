@@ -17,12 +17,18 @@ float zeroGX = 0, zeroGY;
 float maxG, maxRealG;
 Preferences prefs;
 
-LIS331 imu;
+LIS331 imu0, imu1;
 void initImu()
 {
-    imu.setI2CAddr(0x19);
-    imu.begin(LIS331::USE_I2C);
-    imu.setFullScale(IMU_RANGE);
+    pinMode(CS0_PIN, OUTPUT);
+    imu0.setSPICSPin(CS0_PIN);
+    imu0.begin(LIS331::USE_SPI);
+    imu0.setFullScale(IMU_RANGE);
+
+    pinMode(CS1_PIN, OUTPUT);
+    imu1.setSPICSPin(CS1_PIN);
+    imu1.begin(LIS331::USE_SPI);
+    imu1.setFullScale(IMU_RANGE);
     double sumX = 0, sumY = 0;
     int count = 1000;
     // MedianFilter<float> FilterBoi(10);
@@ -31,10 +37,10 @@ void initImu()
     for (int i = 0; i < count; i++)
     {
         int16_t x, y, z;
-        imu.readAxes(x, y, z);
+        imu0.readAxes(x, y, z);
 //        float xG = imu.convertToG(IMU_MAX, x);
-        sumX += imu.convertToG(IMU_MAX, x);
-        sumY += imu.convertToG(IMU_MAX, y);
+        sumX += imu0.convertToG(IMU_MAX, x);
+        sumY += imu0.convertToG(IMU_MAX, y);
 //        delay(10);
         // Serial.printf("g:%f, filter%f\n", xG, FilterBoi.AddValue(xG));
     }
@@ -48,12 +54,12 @@ void initImu()
 float readForce()
 {
     int16_t x, y, z;
-    imu.readAxes(x, y, z);
+    imu0.readAxes(x, y, z);
     float xG, yG;
     // Serial.printf("zero gx%f", zeroGX);
-    xG = imu.convertToG(IMU_MAX, x) - zeroGX;
-    yG = imu.convertToG(IMU_MAX, y) - zeroGY;
-//     Serial.printf("xg:%f zerog: %f xcos %f, yg:%f zerog: %f ysin%f\n", xG, zeroGX, xG / 0.771191440f, yG, zeroGY, yG/sin(39.539));
+    xG = imu0.convertToG(IMU_MAX, x) - zeroGX;
+    yG = imu0.convertToG(IMU_MAX, y) - zeroGY;
+     // Serial.printf("xg:%f zerog: %f xcos %f, yg:%f zerog: %f ysin%f\n", xG, zeroGX, xG / 0.771191440f, yG, zeroGY, yG/sin(39.539));
     // return xG * xComponent - yG * yComponent;
     xG = xG / 0.771191440f;// x/cos(39.539)
     yG = yG / 0.6366033011f;
@@ -85,6 +91,18 @@ double getRPM(float G)
     rpm = rpm / IMU_RADIUS;
     rpm = sqrt(rpm);
     return rpm;
+}
+
+double getDoubleRPM() {
+    int16_t x, y, z;
+    imu0.readAxes(x, y, z);
+    float x0G = imu0.convertToG(IMU_MAX, y);
+    imu1.readAxes(x, y, z);
+    float x1G = imu0.convertToG(IMU_MAX, y);
+    Serial.printf("x0g: %f, x1g: %f\n", x0G, x1G);
+    double deltaA = abs(x0G - x1G);
+    double omega = sqrt(deltaA/IMU_DISTANCE); // rad/s
+    return omega * 60 / 3.14159 ;
 }
 
 double getRotationIntervalMs(double rpm)

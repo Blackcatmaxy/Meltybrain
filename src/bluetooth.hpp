@@ -157,7 +157,8 @@ void dataReceived(BLEDevice device, BLECharacteristic characteristic)
     // ranges from 1-255 with stick resting in the middle ~128
 
     // Allow 'A' button on the controller to toggle LED
-    digitalWrite(LED_PIN, data[2] & 64);
+    digitalWrite(LEDT_PIN, data[2] & 64);
+    digitalWrite(LEDB_PIN, data[2] & 64);
     if (data[2] & 16) {
         throttle_ptr->rotation = 1;
 #ifdef SERIAL_TELEMF

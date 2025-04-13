@@ -68,11 +68,14 @@ void manageRotation(double rpm, bool reset) {
 
     // while (thisRotationUs < rotationIntervalUs) {
         // LED control
-        if (thisRotationUs > ledStart && thisRotationUs < ledEnd)
-            digitalWrite(LED_PIN, HIGH);
-        else
-            digitalWrite(LED_PIN, LOW);
-
+        if (thisRotationUs > ledStart && thisRotationUs < ledEnd) {
+            digitalWrite(LEDT_PIN, HIGH);
+            digitalWrite(LEDB_PIN, LOW);
+        }
+        else {
+            digitalWrite(LEDT_PIN, LOW);
+            digitalWrite(LEDB_PIN, HIGH);
+        }
         if (abs(throttles.forward) - 10 < 0) {
             // no translation
             writeLeft(rotationThrottle);

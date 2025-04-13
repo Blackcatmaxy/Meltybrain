@@ -4,6 +4,8 @@
 #include "bluetooth.hpp"
 #include <Preferences.h>
 #include <imu.hpp>
+#include <SPI.h>
+
 #include "rotation.hpp"
 #include "motors.hpp"
 
@@ -16,11 +18,13 @@ void setup()
 {
     Serial.begin(115200);
 
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, HIGH);
+    pinMode(LEDT_PIN, OUTPUT);
+    pinMode(LEDB_PIN, OUTPUT);
+    digitalWrite(LEDT_PIN, HIGH);
 
-    Wire.begin(SDA_PIN, SCL_PIN);
-    Wire.setClock(400000);
+    SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, CS0_PIN);
+    // Wire.begin(SDA_PIN, SCL_PIN);
+    // Wire.setClock(400000);
 
     prefs.begin("max", false);
     initImu();
@@ -31,11 +35,10 @@ void setup()
     // prefs.begin("yMax", false);
     // prefs.begin("zMax", false);
 
-    maxRPM = prefs.getFloat("maxRPM", 0);
-
-    printf("Initial maxRPM %f, maxG %f\n", maxRPM, maxG);
-     pinMode(LED_PIN, OUTPUT);
-     digitalWrite(LED_PIN, HIGH); // LED pin
+    // maxRPM = prefs.getFloat("maxRPM", 0);
+    //
+    // printf("Initial maxRPM %f, maxG %f\n", maxRPM, maxG);
+    digitalWrite(LEDT_PIN, HIGH); // LED pin
     xTaskCreatePinnedToCore(
             bluetoothSetup,
             "bluetoothTask",
@@ -70,11 +73,15 @@ void controlLoop(void *pvParams)
     while (true) {
         double rpm;
         count++;
+        float G;
         if (count > 1000) {
-            float G = readForce();
+            // G = readForce();
 
-            rpm = getRPM(G);
+            // rpm = getRPM(G);
+            rpm = getDoubleRPM();
+            Serial.printf("RPM: %f\n", rpm);
             count = 0;
+            // Serial.printf("G: %f, max G:%f, max Real G:%f RPM: %f, maxRPM:%f\n", G, maxG, maxRealG, rpm, maxRPM);
         }
         // if (rpm > maxRPM)
         // {
@@ -83,7 +90,7 @@ void controlLoop(void *pvParams)
         //   prefs.end();
         //   prefs.begin("max");
         // }
-        // Serial.printf("G: %f, max G:%f, max Real G:%f RPM: %f, maxRPM:%f\n", G, maxG, maxRealG, rpm, maxRPM);
+
 
         // if (rpm > 00) {
         // digitalWrite(LED_PIN, HIGH);
