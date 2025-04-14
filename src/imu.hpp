@@ -8,16 +8,16 @@
 class IMU
 {
 public:
-    IMU(int csPin);
-    float readForce();
-    double getRPM(float G);
+    IMU() = default;
+    void init(int csPin);
+    float readAccel();
 private:
     LIS331 lis331;
     float zeroGX = 0, zeroGY;
     float maxG, maxRealG;
 };
 
-inline IMU::IMU(int csPin) {
+void IMU::init(int csPin) {
     pinMode(csPin, OUTPUT);
     lis331.setSPICSPin(csPin);
     lis331.begin(LIS331::USE_SPI);
@@ -42,7 +42,7 @@ inline IMU::IMU(int csPin) {
     zeroGY = sumY / count;
 }
 
-float IMU::readForce() {
+float IMU::readAccel() {
     int16_t x, y, z;
     lis331.readAxes(x, y, z);
     float xG, yG;
@@ -51,8 +51,8 @@ float IMU::readForce() {
     yG = lis331.convertToG(IMU_MAX, y) - zeroGY;
     // Serial.printf("xg:%f zerog: %f xcos %f, yg:%f zerog: %f ysin%f\n", xG, zeroGX, xG / 0.771191440f, yG, zeroGY, yG/sin(39.539));
     // return xG * xComponent - yG * yComponent;
-    xG = xG / 0.771191440f;// x/cos(39.539)
-    yG = yG / 0.6366033011f;
+    xG = xG / 0.6303777805f;// x/cos(50.992) - cos of angle perpendicular to motor line
+    yG = yG / 0.7762885120f;//              - cos of angle parallel to motor line
     float G = (xG + yG)/2.0f;
     return G;
 }

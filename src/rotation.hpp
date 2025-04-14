@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "imu.hpp"
+#include "imus.hpp"
 #include "bluetooth.hpp"
 #include "defines.hpp"
 #include "motors.hpp"

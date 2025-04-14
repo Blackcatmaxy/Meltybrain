@@ -26,7 +26,7 @@ void setup()
     // Wire.begin(SDA_PIN, SCL_PIN);
     // Wire.setClock(400000);
 
-    prefs.begin("max", false);
+//    prefs.begin("max", false);
     initImu();
     initMotors();
 
@@ -74,11 +74,11 @@ void controlLoop(void *pvParams)
         double rpm;
         count++;
         float G;
-        if (count > 1000) {
-            // G = readForce();
+        if (count > 50) {
+            // G = readAccel();
 
             // rpm = getRPM(G);
-            rpm = getDoubleRPM();
+            rpm = getRPM();
             Serial.printf("RPM: %f\n", rpm);
             count = 0;
             // Serial.printf("G: %f, max G:%f, max Real G:%f RPM: %f, maxRPM:%f\n", G, maxG, maxRealG, rpm, maxRPM);

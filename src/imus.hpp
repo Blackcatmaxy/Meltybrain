@@ -5,6 +5,7 @@
 #include <SparkFun_LIS331.h>
 #include <math.h>
 #include <MedianFilterLib.h>
+#include "imu.hpp"
 
 #define xComponent 0.7684834570
 #define yComponent 0.6398696561
@@ -15,94 +16,24 @@ float getRPM();
 
 float zeroGX = 0, zeroGY;
 float maxG, maxRealG;
-Preferences prefs;
+//Preferences prefs;
 
-LIS331 imu0, imu1;
+IMU imu0, imu1;
 void initImu()
 {
-    pinMode(CS0_PIN, OUTPUT);
-    imu0.setSPICSPin(CS0_PIN);
-    imu0.begin(LIS331::USE_SPI);
-    imu0.setFullScale(IMU_RANGE);
-
-    pinMode(CS1_PIN, OUTPUT);
-    imu1.setSPICSPin(CS1_PIN);
-    imu1.begin(LIS331::USE_SPI);
-    imu1.setFullScale(IMU_RANGE);
-    double sumX = 0, sumY = 0;
-    int count = 1000;
-    // MedianFilter<float> FilterBoi(10);
-
-//    delay(250);
-    for (int i = 0; i < count; i++)
-    {
-        int16_t x, y, z;
-        imu0.readAxes(x, y, z);
-//        float xG = imu.convertToG(IMU_MAX, x);
-        sumX += imu0.convertToG(IMU_MAX, x);
-        sumY += imu0.convertToG(IMU_MAX, y);
-//        delay(10);
-        // Serial.printf("g:%f, filter%f\n", xG, FilterBoi.AddValue(xG));
-    }
-    zeroGX = sumX / count;
-    zeroGY = sumY / count;
-    Serial.printf("zero x: %f, zero y: %f\n", zeroGX, zeroGY);
-    maxG = prefs.getFloat("maxG", 0);
-    maxRealG = prefs.getFloat("maxRealG", 0);
+    imu0.init(CS0_PIN);
+    imu1.init(CS1_PIN);
 }
 
-float readForce()
+float getRPM()
 {
-    int16_t x, y, z;
-    imu0.readAxes(x, y, z);
-    float xG, yG;
-    // Serial.printf("zero gx%f", zeroGX);
-    xG = imu0.convertToG(IMU_MAX, x) - zeroGX;
-    yG = imu0.convertToG(IMU_MAX, y) - zeroGY;
-     // Serial.printf("xg:%f zerog: %f xcos %f, yg:%f zerog: %f ysin%f\n", xG, zeroGX, xG / 0.771191440f, yG, zeroGY, yG/sin(39.539));
-    // return xG * xComponent - yG * yComponent;
-    xG = xG / 0.771191440f;// x/cos(39.539)
-    yG = yG / 0.6366033011f;
-     float G = (xG + yG)/2.0f;
-//    float G = yG;
+    float accel = imu0.readAccel() + imu1.readAccel();
+    accel *= 0.5f;
 
-    // if (G > maxG)
-    // {
-    //     maxG = G;
-    //     prefs.putFloat("maxG", G);
-    //     prefs.end();
-    //     prefs.begin("max");
-    // }
-
-    // if (xG > maxRealG)
-    // {
-    //     maxRealG = xG;
-    //     prefs.putFloat("maxRealG", xG);
-    //     prefs.end();
-    //     prefs.begin("max");
-    // }
-
-    return G;
-}
-
-double getRPM(float G)
-{
-    double rpm = fabs(G * 89445.0f);
+    float rpm = fabs(accel * 89445.0f);
     rpm = rpm / IMU_RADIUS;
     rpm = sqrt(rpm);
     return rpm;
-}
-
-double getDoubleRPM() {
-    int16_t x, y, z;
-    imu0.readAxes(x, y, z);
-    float x0G = imu0.convertToG(IMU_MAX, y);
-    imu1.readAxes(x, y, z);
-    float x1G = imu0.convertToG(IMU_MAX, y);
-    Serial.printf("x0g: %f, x1g: %f\n", x0G, x1G);
-    double deltaA = abs(x0G - x1G);
-    double omega = sqrt(deltaA/IMU_DISTANCE); // rad/s
-    return omega * 60 / 3.14159 ;
 }
 
 double getRotationIntervalMs(double rpm)
